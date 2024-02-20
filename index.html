@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dokumentenverwaltung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .header {
+            background-color: #333;
+            color: purple;
+            padding: 10px 20px;
+            text-align: left;
+            position: relative;
+        }
+
+        .header .Dokumentenverwaltung {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 24px;
+            color: white;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        input[type="submit"] {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #4cae4c;
+        }
+
+        .add-clause, .remove-clause {
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .add-party {
+            margin-top: 10px;
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .remove-party {
+            margin-top: 10px;
+            background-color: #f44336; /* Red */
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .remove-clause {
+            background-color: #f44336;
+        }
+
+        .button-green {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .button-green:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Dokumentenverwaltung</h1>
+    <div class="Dokumentenverwaltung">Document management</div>
+</div>
+
+<h2>Add document</h2>
+<form id="documentForm">
+    <label for="documentType">Type:</label><br>
+    <input type="text" id="documentType" name="documentType"><br>
+
+    <label for="documentTitle">Title:</label><br>
+    <input type="text" id="documentTitle" name="documentTitle"><br>
+
+
+    <div id="parties">
+        <div id="party1">
+            <label for="partyName1">Name of Party 1:</label><br>
+            <input type="text" id="partyName1" name="partyName1"><br>
+            <label for="partyRole1">Role of Party 1:</label><br>
+            <input type="text" id="partyRole1" name="partyRole1"><br>
+        </div>
+        <div id="party2">
+            <label for="partyName2">Name of Party 2:</label><br>
+            <input type="text" id="partyName2" name="partyName2"><br>
+            <label for="partyRole2">Role of Party 2:</label><br>
+            <input type="text" id="partyRole2" name="partyRole2"><br>
+        </div>
+    </div>
+
+    <label for="effectiveDate">Effective date:</label><br>
+    <input type="date" id="effectiveDate" name="effectiveDate"><br>
+
+    <div id="clausesContainer">
+        <label for="clauseTitle1">Clause 1 title:</label><br>
+        <input type="text" id="clauseTitle1" name="clauseTitle1"><br>
+        <label for="clauseDetails1">Clause 1 details:</label><br>
+        <input type="text" id="clauseDetails1" name="clauseDetails1"><br>
+    </div>
+    <label for="documentOrigin">Region:</label><br>
+    <select id="documentOrigin" name="documentOrigin">
+        <option value="East USA">East USA</option>
+        <option value="Central USA">Central USA</option>
+        <option value="Mountain Zone USA">Mountain Zone USA</option>
+        <option value="Pacific USA">Pacific USA</option>
+        <option value="Alaska USA">Alaska USA</option>
+        <option value="Hawaii USA">Hawaii USA</option>
+        <option value="Central Europe">Central Europe</option>
+        <option value="Western Europe">Western Europe</option>
+        <option value="Eastern Europe">Eastern Europe</option>
+        <option value="UK">UK</option>
+    </select><br>
+
+    <button type="button" class="add-clause" onclick="addClause()">Add clause</button>
+    <button type="button" class="remove-clause" onclick="removeClause()">Remove clause</button>
+    <button type="button" class="add-party" onclick="addParty()">Add Party</button>
+    <button type="button" class="remove-party" onclick="removeParty()">Remove Party</button>
+
+    <input type="submit" value="Send document">
+</form>
+
+<h2>Retrieve document</h2>
+<input type="text" id="documentId" placeholder="Document-ID">
+<button onclick="getDocument()" class="button-green">Retrieve document</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script>
+    let partyCount = 2;
+    let clauseCount = 1;
+
+    function addParty() {
+        partyCount++;
+        let newPartyDiv = document.createElement('div');
+        newPartyDiv.id = `party${partyCount}`;
+        newPartyDiv.innerHTML = `
+            <label for="partyName${partyCount}">Name of Party ${partyCount}:</label><br>
+            <input type="text" id="partyName${partyCount}" name="partyName${partyCount}"><br>
+            <label for="partyRole${partyCount}">Role of Party ${partyCount}:</label><br>
+            <input type="text" id="partyRole${partyCount}" name="partyRole${partyCount}"><br>
+        `;
+        document.getElementById('parties').appendChild(newPartyDiv);
+    }
+
+    function removeParty() {
+        if (partyCount > 2) {
+            let partyToRemove = document.getElementById(`party${partyCount}`);
+            document.getElementById('parties').removeChild(partyToRemove);
+            partyCount--;
+        } else {
+            alert("At least two parties are required.");
+        }
+    }
+
+    function addClause() {
+        clauseCount++;
+        const newClause = document.createElement('div');
+        newClause.id = `clause${clauseCount}`;
+        newClause.innerHTML = `
+                <label for="clauseTitle${clauseCount}">Clause ${clauseCount} title:</label><br>
+                <input type="text" id="clauseTitle${clauseCount}" name="clauseTitle${clauseCount}"><br>
+                <label for="clauseDetails${clauseCount}">Clause ${clauseCount} details:</label><br>
+                <input type="text" id="clauseDetails${clauseCount}" name="clauseDetails${clauseCount}"><br>
+            `;
+        document.getElementById('clausesContainer').appendChild(newClause);
+    }
+
+    function removeClause() {
+        if (clauseCount > 1) {
+            const clauseToRemove = document.getElementById(`clause${clauseCount}`);
+            document.getElementById('clausesContainer').removeChild(clauseToRemove);
+            clauseCount--;
+        } else {
+            alert("At least one clause is required.");
+        }
+    }
+
+    document.getElementById('documentForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const documentData = {
+            "type": document.getElementById('documentType').value,
+            "title": document.getElementById('documentTitle').value,
+            "parties": [],
+            "effectiveDate": document.getElementById('effectiveDate').value,
+            "terms": [],
+            "signature": []
+        };
+        for (let i = 1; i <= partyCount; i++) {
+            const partyName = document.getElementById(`partyName${i}`).value;
+            const partyRole = document.getElementById(`partyRole${i}`).value;
+            documentData.parties.push({
+                "name": partyName,
+                "role": partyRole
+            });
+
+            documentData.signature.push({
+                "signature of the": partyRole,
+                "signature": "",
+                "dateSigned": ""
+            });
+        }
+
+        for (let i = 1; i <= clauseCount; i++) {
+            documentData.terms.push({
+                "clauseTitle": document.getElementById(`clauseTitle${i}`).value,
+                "clauseDetails": document.getElementById(`clauseDetails${i}`).value
+            });
+        }
+
+        const payload = {
+            "document": documentData,
+            "origin": document.getElementById('documentOrigin').value
+        };
+
+        const documentType = document.getElementById('documentType').value.trim();
+
+        if (documentType === '') {
+            alert('Type cannot be left empty.');
+            e.preventDefault();
+            return;
+        }
+
+        fetch('http://127.0.0.1:5000/document', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                alert('Document saved with ID: ' + data.id);
+            })
+            .catch((error) => {
+                console.error('error:', error);
+            });
+    });
+
+    function getDocument() {
+        const docId = document.getElementById('documentId').value;
+        fetch('http://127.0.0.1:5000/document/' + docId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.document) {
+                    displayDocument(data.document, data.id, data.origin, data.timestamp);
+                } else {
+                    alert('Document not found');
+                }
+            })
+            .catch((error) => {
+                console.error('error:', error);
+            });
+    }
+
+    function displayDocument(doc, docId, origin, timestamp) {
+        const pdf = new jspdf.jsPDF();
+
+        const lineHeight = 10;
+        let y = 10;
+
+        pdf.setFontSize(16);
+        pdf.text("Title: " + doc.title, 10, y);
+        y += lineHeight * 2;
+
+        pdf.text("Type: " + doc.type, 10, y);
+        y += lineHeight;
+
+        pdf.text("Effective Date: " + doc.effectiveDate, 10, y);
+        y += lineHeight * 2;
+
+        pdf.setFontSize(14);
+        pdf.text("Parties:", 10, y);
+        y += lineHeight;
+
+        pdf.setFontSize(12);
+        doc.parties.forEach(party => {
+            let partyText = "Name: " + party.name + ", Role: " + party.role;
+            y = addWrappedText(partyText, pdf, y, lineHeight);
+        });
+
+        y += lineHeight;
+
+        pdf.setFontSize(14);
+        pdf.text("Terms:", 10, y);
+        y += lineHeight;
+
+        pdf.setFontSize(12);
+        doc.terms.forEach(term => {
+            let termText = "Clause: " + term.clauseTitle + ", Details: " + term.clauseDetails;
+            y = addWrappedText(termText, pdf, y, lineHeight);
+        });
+
+        y += lineHeight;
+
+        pdf.setFontSize(14);
+        pdf.text("Signatures:", 10, y);
+        y += lineHeight;
+
+        pdf.setFontSize(12);
+        doc.parties.forEach(party => {
+            let signatureText = "Signature of the " + party.role + ": _____________ Date: ______________";
+            y = addWrappedText(signatureText, pdf, y, lineHeight);
+        });
+
+        y += lineHeight;
+
+        pdf.setFontSize(12);
+        pdf.text("Document ID: " + docId, 10, y);
+        y += lineHeight;
+
+        pdf.text("Region: " + origin, 10, y);
+        y += lineHeight;
+
+        pdf.text("Timestamp: " + timestamp, 10, y);
+
+        pdf.save('document.pdf');
+    }
+
+    function addWrappedText(text, pdf, y, lineHeight) {
+        const lines = pdf.splitTextToSize(text, 180);
+        lines.forEach(line => {
+            pdf.text(line, 10, y);
+            y += lineHeight;
+        });
+        return y;
+    }
+
+</script>
+</body>
+</html>
